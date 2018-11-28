@@ -37,7 +37,7 @@ class App extends Component {
             connection.getData({
                 begin: Date.now() - 60e3 * 60 * 24 * 6,
                 end: Date.now(),
-                requestParameter: "t,snowdepth,pri",
+                requestParameter: "t,snowdepth,r_1h",
                 timestep: 60 * 60 * 1000,
                 bbox: "20.6455928891, 59.846373196, 31.5160921567, 70.1641930203",
                 callback: (data, errors) => {
