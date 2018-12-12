@@ -31,9 +31,8 @@ class App extends Component {
     }
 
     componentDidMount() {
-        var connection = new Metolib.WfsConnection();
+        const connection = new Metolib.WfsConnection();
         if (connection.connect('http://opendata.fmi.fi/wfs', 'fmi::observations::weather::cities::multipointcoverage')) {
-            // Connection was properly initialized. So, get the data.
             connection.getData({
                 begin: Date.now() - 60e3 * 60 * 24 * 6,
                 end: Date.now(),
@@ -43,13 +42,19 @@ class App extends Component {
                 callback: (data, errors) => {
                     if (errors.length > 0) {
 
-                        errors.map(err => {
+                        errors.forEach(err => {
                             console.error('FMI API error: ' + err.errorText);
                         });
                         return;
                     }
-                    this.setState({observationLocations: data.locations});
-                    // Disconnect because the flow has finished.
+                    this.setState({
+                        observationLocations: data.locations
+                            .map(loc => {
+                                const [lon, lat] = loc.info.position.map(parseFloat);
+                                return {...loc, position: {lat, lon}}
+                            })
+                    });
+
                     connection.disconnect();
                 }
             });
@@ -66,8 +71,8 @@ class App extends Component {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution="&copy; <a href=&quot;http://osm.org/copyright&quot;>OpenStreetMap</a> contributors"
                 />
-                {this.state.observationLocations.map(loc => <Marker position={loc.info.position.map(parseFloat)} key={loc.info.id}>
-                    <Popup><pre>{JSON.stringify(loc.info,null,4)}</pre></Popup>
+                {this.state.observationLocations.map(loc => <Marker position={[loc.position.lat, loc.position.lon]}
+                                                                    key={loc.info.id}>
                 </Marker>)}
             </MapContainer>
         );
